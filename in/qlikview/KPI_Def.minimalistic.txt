@@ -1,0 +1,48 @@
+USAGE	NAME	FORMULA
+//		
+//	*** Set Modifiers *** 	
+*	PY	Year={$(=Max(Year)-1)}
+*	CY	Year={$(=Max(Year))}
+*	LH	CARRIER_ALN_CD_LH_Flag = {1}
+//		
+//	**** TRAFFIC *****	
+//		
+*	PAX_NR	Sum (PAX_NR)
+*	PAX_NR CY	Sum ( {< $(CY) >} PAX_NR )
+*	PAX_NR PY	Sum ( {< $(PY) >} PAX_NR )
+//		
+*	PAX_NR LH	Sum ( {< $(LH) >} PAX_NR )
+*	PAX_NR LH CY	Sum ( {< $(LH) , $(CY) >} PAX_NR )
+*	PAX_NR LH PY	Sum ( {< $(LH) , $(PY) >} PAX_NR )
+//		
+*	PAX2	$(PAX_NR LH CY) * 2
+*		
+*	#Destinations	Count(DISTINCT {< $(LH), $(CY) >} OTHER_ARP_CD)
+*	%FEE	sum(FEE_TOTAL)/ sum(TOTAL FEE_TOTAL)
+*	%PAX	Sum(PAX_NR_DETAILS)/ SUM (TOTAL PAX_NR_DETAILS)
+*		
+*	**** COST TYPES ****	
+*		
+*	Infrastructure Cost	Sum(FEE_TOTAL)
+*		
+*	AirportChargesTotal	Sum (            ARP_CHARGES)
+*	AirportChargesTotal CY	Sum ({< $(CY) >} ARP_CHARGES)
+*	AirportChargesTotal PY	Sum ({< $(PY) >} ARP_CHARGES)
+*		
+*	G+E Total	Sum (             FEE_ALL)
+*	G+E Total CY	Sum ( {< $(CY) >} FEE_ALL)
+*	G+E Total PY	Sum ( {< $(PY) >} FEE_ALL)
+*		
+*	G+E Total/PAX LH	$(G+E Total) / $(PAX_NR LH)
+*	G+E Total/PAX LH CY	$(G+E Total CY) / $(PAX_NR LH CY)
+*	G+E Total/PAX LH PY	$(G+E Total PY) / $(PAX_NR LH PY)
+//		
+//	**** MARGINS ****	
+//		
+*	Margin 1	sum(Margin_I_A_ONB)
+*	Margin 1 CY	sum({< $(CY) >} Margin_I_A_ONB)
+*	Margin 1 PY	sum({< $(PY) >} Margin_I_A_ONB)
+*		
+*	Margin 1/PAX LH 	$(Margin 1)    / $(PAX_NR LH)
+*	Margin 1/PAX LH CY	$(Margin 1 CY) / $(PAX_NR LH CY)
+*	Margin 1/PAX LH PY	$(Margin 1 PY) / $(PAX_NR LH PY)
