@@ -36,6 +36,7 @@ Quelques trucs et astuces sur certains langages, outils, ...
 * [Retourner les tables avec des champs de type Geometry non indexés](./scripts/postgresql/audit/tables-without-indexes-on-geometry.sql)
 * [Trouver les tables avec le plus de fragmentation](./scripts/postgresql/audit/find_bloated_tables.sql)
 * [Trouver les index manquants](./scripts/postgresql/audit/missing-indexes.sql)
+* [Rechercher une valeur dans les colonnes d'une table](./scripts/postgresql/audit/search-in-every-field-in-a-table.sql)
 
 #### Taille
 
