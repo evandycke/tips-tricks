@@ -16,6 +16,105 @@ Quelques trucs et astuces sur certains langages, outils, ...
 * [Obtenir une ordre SQL de CREATE TABLE d'une table](./scripts/db2/create-table-from-db2-structure.sql)
 * [Compter le nombre de colonnes](./scripts/db2/count-columns-per-table.sql) par table
 
+## Microsoft SQL Server
+
+![Microsoft SQL Server](./images/mssql-logo-256.png)
+
+### Scripts utiles
+
+#### Sécurité
+
+* [Find TCP port](./scripts/security/find-tcp-port.sql)
+* [List of SQL Server users who can connect](./scripts/security/list-of-sqlserver-users-who-can-connect.sql)
+* [List of Active Directory users who can connect](./scripts/security/list-of-ad-users-who-can-connect.sql)
+* [Changing the current password](./scripts/security/changing-the-current-password.sql)
+* [Restore password](./scripts/security/restore-password.sql)
+* [Generate permissions](./scripts/security/generate-permissions.sql)
+* [Permissions on objects and object owners](./scripts/security/permissions-on-objects-and-object-owners.sql)
+
+#### Indexes
+
+* [Deletion of hypothetical indexes](./scripts/indexes/deletion-of-hypothetical-indexes.sql)
+* [Find duplicate indexes](./scripts/indexes/find-duplicate-indexes.sql)
+* [Rebuild indexes](./scripts/indexes/rebuild-indexes.sql)
+* [Useless indexes](./scripts/indexes/useless-indexes.sql)
+* [Missing indexes #1](./scripts/indexes/missing-indexes-1.sql)
+* [Missing indexes #2](./scripts/indexes/missing-indexes-2.sql)
+
+#### Primary Key / Foreign Key / Constraints
+
+* [Drop & Create of all existing constraints](./scripts/pk_fk_constraints/drop-create-of-all-existing-constraints.sql)
+* [Drop all FK from DB](./scripts/pk_fk_constraints/drop-all-fk-from-db.sql)
+* [Find tables that do not have foreign keys](./scripts/pk_fk_constraints/find-tables-that-do-not-have-foreign-keys.sql)
+* [List all the dependencies of the database](./scripts/pk_fk_constraints/list-all-the-dependencies-of-the-database.sql)
+* [Orphan tables (without referential integrity constraints)](./scripts/pk_fk_constraints/orphan-tables.sql)
+* [Tables containing ID columns with no foreign key](./scripts/pk_fk_constraints/tables-containing-id-columns-with-no-foreign-key.sql)
+* [Tables with constraints, default values, rules, triggers, ... and how many](./scripts/pk_fk_constraints/tables-with-constraints-default-values-rules-triggers-and-how-many.sql)
+* [Tables without a primary key](./scripts/pk_fk_constraints/tables-without-primary-key.sql)
+* [Tables without clustered index (and without any index at all)](./scripts/pk_fk_constraints/tables-without-clustered-index.sql)
+* [Top 10 most indexed tables](./scripts/pk_fk_constraints/top-10-most-indexed-tables.sql)
+* [Find tables with foreign keys](./scripts/pk_fk_constraints/find-tables-with-fk.sql)
+
+#### Triggers
+
+* [Find the triggers positioned on the tables](./scripts/triggers/find-all-triggers.sql)
+
+#### Cycle de vie de la donnée
+
+* [Delete historical data from a table according to its dependencies](./scripts/data_lifecycle/delete-historical-data-from-a-table-according-to-its-dependencies.sql)
+* [A summary of the structure of the tables](./scripts/data_lifecycle/summary-of-tables-structures.sql)
+* [Gets the content of each column in a specified table](./scripts/data_lifecycle/get-content-of-each-column-in-a-specified-table.sql)
+* [Max data length](./scripts/data_lifecycle/max-data-length.sql)
+* [Number of tables per schema](./scripts/data_lifecycle/number-of-tables-per-schema.sql)
+* [Tables that have no documentation in the extended properties](./scripts/data_lifecycle/tables-without-documentation-in-extended-properties.sql)
+* [Using a column in a database](./scripts/data_lifecycle/using-a-column-in-a-database.sql)
+* [Impact analysis](./scripts/data_lifecycle/impact-analysis.sql)
+* [Batch delete](./scripts/data_lifecycle/batch-delete.sql)
+
+#### Procédures stockées
+
+* [Execute instructions stored in database](./scripts/stored_procedures/execute-instructions-stored-in-database.sql)
+* [Retrieve all stored procedures](./scripts/stored_procedures/retrieve-all-stored-procedures.sql)
+
+#### BCP
+
+* [Generate the bcp instruction for a table](./scripts/bcp/generate-bcp-instruction-for-a-table.sql)
+* [Generate the bcp instruction from all the tables in the database](./scripts/bcp/generate-bcp-instruction-for-all-the-tables-in-db.sql)
+
+#### Vues
+
+* [Retrieve the composition of a view](./scripts/view/view-composition.sql)
+
+#### Audit
+
+* [Returns the available space of the server](./scripts/audit/available-space.sql)
+* [Returns the date of the last backup performed](./scripts/audit/last-backup-date.sql)
+* [Memory usage check](./scripts/audit/memory-usage-check.sql)
+* [Number of rows and spaces (allocated, used, unused) of tables](./scripts/audit/number-rows-and-table-space.sql)
+* [Retrieve system information from the RDBMS](./scripts/audit/rdbms-system-informations.sql)
+* [SQL Server 2012 Diagnostic Information Queries](./scripts/audit/sqlserver-2012-diagnostic-information.sql)
+* [Compute statistics](./scripts/audit/compute-statistics.sql)
+* [Detailed index fragmentation](./scripts/audit/detailed-index-fragmentation.sql)
+* [Limited index fragmentation](./scripts/audit/limited-index-fragmentation.sql)
+* [Volumetry](./scripts/audit/volumetry.sql)
+* [The latest modifications made to the database](./scripts/audit/latest-modification-made.sql)
+* [Top 20 longest queries](./scripts/audit/top-20-longest-queries.sql)
+* [Get the optimal set of columns that compose PK](./scripts/audit/optimal-set-of-columns.sql)
+* [Job status](./scripts/audit/job-status.sql)
+* [One stop view of tables structure](./scripts/audit/one-stop-view-of-tables-structure.sql)
+* [Get each object of tables](./scripts/audit/)
+
+### Liens utiles
+
+* [Cycles Adventure Works](https://docs.microsoft.com/fr-fr/previous-versions/sql/sql-server-2008/ms124825(v=sql.100)?redirectedfrom=MSDN) - MS SQL Server DB sample
+* [Adventure Works](https://docs.microsoft.com/fr-fr/previous-versions/sql/sql-server-2008/ms124501(v=sql.100)?redirectedfrom=MSDN) - MS SQL Server DB sample
+* [SQL Authority](https://blog.sqlauthority.com/) - One of my references in SQL
+* [SQL Server Maintenance Solution](https://ola.hallengren.com/) - SQL Server Backup, Integrity Check, and Index and Statistics Maintenance made by [Ola Hallengren](https://github.com/olahallengren)
+
+### Dépôts utiles
+
+* [Ola Hallengren](https://github.com/olahallengren)
+
 ## PostgreSQL
 
 ![PostgreSQL](./images/postgresql-logo-256.png)
