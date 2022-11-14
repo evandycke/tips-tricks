@@ -160,6 +160,26 @@ Quelques trucs et astuces sur certains langages, outils, ...
 
 * [FlyWay](https://flywaydb.org/) - Un outil open-source de maintien de base de données, avec des scripts de migration, des scripts rejouables, des scripts d'annulation ...
 
+## Neo4j
+
+![Neo4j](./images/neo4j-logo-256.png)
+
+### Scripts utiles
+
+* [Data dictionnary (tables)](./scripts/data-dictionnary-tables.sql)
+* [Data dictionnary (relations)](./scripts/data-dictionnary-relations.sql)
+* [Build nodes & edges](./scripts/build-nodes-and-edges.sql)
+* [Delete existing nodes & edges](./scripts/delete-existing-nodes-edges.sql)
+* [Rebuild all nodes & edges](./scripts/rebuild-all-nodes-and-edges.sql)
+
+### Liens utiles
+
+* [Neo4j Blog](https://neo4j.com/blog/) - A blog about Neo4j ;)
+* [Graph visualization](https://neo4j.com/blog/graph-visualization-neo4j-schemas-yfiles/)
+* [Data Integration](https://neo4j.com/data-integration/)
+* [Synbioz Blog](https://www.synbioz.com/blog/tech/introduction-graph-db) - An introduction to graph-db
+* [ETL](https://neo4j.com/developer/neo4j-etl/)
+
 ## Système & Réseau
 
 ![System](https://media.giphy.com/media/gI00zO3lxE01GL5m7O/giphy.gif)
