@@ -57,10 +57,18 @@ Quelques trucs et astuces sur certains langages, outils, ...
 
 ### Liens utiles
 
-* [PostgreSQL SQL Tricks](https://postgres.cz/wiki/PostgreSQL_SQL_Tricks) - Tips & Tricks on PostgreSQL
-* [PostgreSQL Index Maintenance](https://wiki.postgresql.org/wiki/Index_Maintenance) - Index maintenance
+* [PostgreSQL SQL Tricks](https://postgres.cz/wiki/PostgreSQL_SQL_Tricks) - Tips & Tricks
+* [PostgreSQL Index Maintenance](https://wiki.postgresql.org/wiki/Index_Maintenance) - Maintenance des index
 * [Postgres Cheat Sheet](https://postgrescheatsheet.com/#/tables) - PGSQL cheat sheet
-* [PGSQL commands & queries](https://dzone.com/articles/useful-postgresql-commandsqueries-part-1) - Useful commands & queries
+* [PGSQL commands & queries](https://dzone.com/articles/useful-postgresql-commandsqueries-part-1) - Commandes et requêtes utiles
+
+## Elastic
+
+![Elastic](./images/elastic-logo-256.png)
+
+### Liens utiles
+
+* [Kibana best practices](https://www.elastic.co/guide/en/kibana/master/development-best-practices.html) - Best practices from Elastic
 
 ## Réalisé avec
 
