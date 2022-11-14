@@ -1,0 +1,391 @@
+TRACE [# Create KPI Repository v3.20 by Christof Schwarz #];
+/* (Release Notes at the end)
+
+HOW TO USE THIS SCRIPT?
+=======================
+
+--> Pick one of the following 4 scenarios which matches your setup:
+
+1) QLIKVIEW & KPI FILE
+----------------------
+
+If the KPI Definitions are in a Flat file and you use QlikView:
+
+SET vKPI_Source = 'File'; 
+SET vKPI_File = [E:\include\KPI_Def.txt];  
+SET vKPI_File_Params = [txt, codepage is 1252, embedded labels, delimiter is '\t', msq];
+SET vKPI_KeepTable = 1; // 
+$(must_include=[E:\include\Create_KPI_Repository-include.txt]);  // QlikView
+
+
+
+
+2) QLIK SENSE & FILE
+--------------------
+
+If the KPI Definitions are in a Flat file and you use Qlik Sense:
+
+	Create a folder connection to where the include-script.txt is placed and a 
+	folder connection (if different) where the KPI definition file is placed. 
+	All formats of the file are supported but you have to provide the 
+	file import parameters below, so it could be txt, biff, xlsx …
+
+SET vKPI_Source = 'File'; 
+SET vKPI_File = [lib://include/KPI_Def.txt];  // Qlik Sense
+SET vKPI_File_Params = [txt, codepage is 1252, embedded labels, delimiter is '\t', msq];
+SET vKPI_KeepTable = 1; 
+$(must_include=[Lib://include/Create_KPI_Repository-include.txt]);  
+
+
+
+
+3) QLIKVIEW & KPI DATABASE
+--------------------------
+
+If the KPI Definitions are in a Database table and you use QlikView
+
+	Connect to the database where the definition table Is located first
+	e.g. below is a connection to MS Access using OLEDB driver.
+
+LET vAccessDB = 'E:\include\KPI_Definitions.mdb';
+OLEDB CONNECT TO [Provider=Microsoft.ACE.OLEDB.12.0;User ID=Admin;Data Source=$(vAccessDB);Mode=Share Deny None;Extended Properties="";Jet OLEDB:System database="";Jet OLEDB:Registry Path="";Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False;Jet OLEDB:Support Complex Data=False;Jet OLEDB:Bypass UserInfo Validation=False;Jet OLEDB:Limited DB Caching=False;Jet OLEDB:Bypass ChoiceField Validation=False];
+
+SET vKPI_Source = Database; 
+LET vKPI_SQL_AppGroups = 'AppGroups';
+LET vKPI_SQL_Set_Definitions = 'Set_Definitions';
+LET vKPI_SQL_KPI_Definitions = 'KPI_Definitions';
+LET vKPI_SQL_KPI_Variants = 'KPI_Variants';
+
+$(must_include=[E:\include\Create_KPI_Repository-include.txt]);  
+
+
+
+4) QLIK SENSE & KPI DATABASE
+----------------------------
+
+If the KPI Definitions are in a Database table and you use Qlik Sense
+
+	Create a folder connection to where the include script is placed. In below 
+	example that connection is called “include”
+	Create the database connection to where the definition table Is located. 
+	Connect to it, then provide the SQL command in the variable vKPI_Select before 
+	calling the include script.
+
+LIB CONNECT TO 'kpi_definitions_db'; // Qlik Sense
+
+SET vKPI_Source = Database; 
+LET vKPI_SQL_AppGroups = 'AppGroups';
+LET vKPI_SQL_Set_Definitions = 'Set_Definitions';
+LET vKPI_SQL_KPI_Definitions = 'KPI_Definitions';
+LET vKPI_SQL_KPI_Variants = 'KPI_Variants';
+
+$(must_include=[Lib://include/Create_KPI_Repository-include.txt]);  
+
+
+*/
+
+LET vtmp_N = DocumentName();
+TRACE [# DocumentName() = "$(vtmp_N)" #];
+LET vtmp_N = DocumentTitle();
+TRACE [# DocumentTitle() = "$(vtmp_N)" #];
+LET vtmp_N = IsPartialReload();
+TRACE [# IsPartialReload() = $(vtmp_N) #];
+
+// If Partial reload left a table, drop it now
+IF Alt(NoOfFields('$KPI_Table'),0) THEN
+	DROP TABLE $KPI_Table;
+END IF
+
+$KPI_TemplateTable:
+ADD LOAD * INLINE [AUTOID,SORTID,USAGE,NAME,FORMULA,VARIANTOF,SEARCH,REPLACE,DONTRESOLVE,NUMFORMAT,DECIMALSEP,THOUSANDSEP,COMMENT,APP_PATTERNNAME];
+
+LET vtmp_NoOfAllowedCols = NoOfFields('$KPI_TemplateTable');
+
+
+// Import data rows
+
+IF vKPI_Source LIKE 'File' THEN
+
+	// If KPIs provided in Flat file
+
+	TRACE [# Mode: KPIs from File ($(vKPI_File)) #];
+	
+	LET vKPI_File_Params = If(Trim(vKPI_File_Params) LIKE '(*)'
+		,Trim(vKPI_File_Params)
+		,'(' & Trim(vKPI_File_Params) & ')');
+		
+	TRACE [# Step 1/5: Mapping-load file patterns #];
+	
+	$tmp_PatternMapping:
+	ADD MAPPING LOAD 
+		NAME AS USAGE
+		,FORMULA AS APP_PATTERNNAME
+	FROM 
+		[$(vKPI_File)] $(vKPI_File_Params)
+	WHERE
+		USAGE Like '$*'
+		AND If(Len(DocumentTitle()), DocumentTitle(), DocumentName()) LIKE FORMULA;
+	
+	
+	TRACE [# Step 2/5: Load into temp table #];
+
+	
+	CONCATENATE ($KPI_TemplateTable) 
+	ADD LOAD
+		RowNo() AS AUTOID,
+		ApplyMap('$tmp_PatternMapping', USAGE, USAGE) AS APP_PATTERNNAME,
+		* 
+	FROM 
+		[$(vKPI_File)] $(vKPI_File_Params)
+	WHERE
+		NOT USAGE LIKE '$*'
+		AND WildMatch(If(Len(DocumentTitle()), DocumentTitle(), DocumentName())
+			, ApplyMap('$tmp_PatternMapping', USAGE, USAGE))
+		AND Len(NAME);
+
+
+ELSE
+
+	// KPIS are load from database 
+	TRACE [# Mode: KPIs from database #];
+
+	TRACE [# Step 1/5: Mapping-load file patterns  #];
+		
+	$tmp_PatternMapping:
+	ADD MAPPING LOAD 
+	// JOIN ON
+		APPGROUP AS USAGE
+	// ADD FIELD	
+		,APP_PATTERNNAME
+	;
+	SELECT * FROM $(vKPI_SQL_AppGroups) ORDER BY SORTID;
+	
+	TRACE [# Step 2/5: Load into temp table from database #];
+
+	FOR EACH vtmp_SQLTable IN '$(vKPI_SQL_Set_Definitions)', '$(vKPI_SQL_KPI_Definitions)', '$(vKPI_SQL_KPI_Variants)'
+
+		CONCATENATE ($KPI_TemplateTable) 
+		ADD LOAD
+			RowNo() AS AUTOID,
+			*
+		WHERE
+			WildMatch(If(Len(DocumentTitle()), DocumentTitle(), DocumentName())
+				, ApplyMap('$tmp_PatternMapping', USAGE, USAGE))
+			AND Len(NAME);
+		;
+		SELECT * FROM $(vtmp_SQLTable) ORDER BY SORTID;
+
+	NEXT vtmp_SQLTable;
+ENDIF
+
+
+IF NoOfFields('$KPI_TemplateTable') > vtmp_NoOfAllowedCols THEN
+	Error: The definition file uses unallowed columns;
+	EXIT SCRIPT;
+END IF
+
+
+TRACE [# Step 3/5: Load and sort into temp table from resident #];
+
+// Load KPI Definitions
+
+$KPI_Table_tmp:
+NOCONCATENATE ADD LOAD
+    USAGE AS [..USAGE]
+    ,APP_PATTERNNAME AS [..APP_PATTERNNAME]
+    ,NAME AS [..NAME]
+	,If(Len(VARIANTOF)
+		, REPLACE(Lookup('FORMULA', 'NAME', VARIANTOF, '$KPI_TemplateTable'), SEARCH, REPLACE)
+		, FORMULA) AS [..FORMULA]
+	,If(Len(VARIANTOF)
+		, Lookup('FORMULA', 'NAME', VARIANTOF, '$KPI_TemplateTable')
+		, FORMULA) AS [..FORMULA.orig]
+	,VARIANTOF AS [..VARIANTOF]
+	,SEARCH AS [..SEARCH]
+	,REPLACE AS [..REPLACE]
+	,DONTRESOLVE AS [..DONTRESOLVE]
+	,NUMFORMAT AS [..NUMFORMAT]
+	,DECIMALSEP AS [..DECIMALSEP]
+	,THOUSANDSEP AS [..THOUSANDSEP]
+	,COMMENT AS [..COMMENT]
+
+	,If(Len(VARIANTOF)
+		, Lookup('AUTOID', 'NAME', VARIANTOF, '$KPI_TemplateTable') * 1000000 + AUTOID
+		, AUTOID * 1000000) AS [..FINALSORTID]
+RESIDENT 
+	$KPI_TemplateTable
+WHERE
+	NOT USAGE Like '$A*'
+	AND WildMatch(If(Len(DocumentTitle()), DocumentTitle(), DocumentName()), '' & APP_PATTERNNAME, USAGE)
+	AND Len(NAME);
+	
+DROP TABLE $KPI_TemplateTable;
+
+TRACE [# Step 5/5: Loading into final KPI table from resident #];
+
+$KPI_Table:
+ADD LOAD DISTINCT
+    [..NAME] AS $KPI.NAME
+    ,[..FORMULA] AS $KPI.FORMULA
+	,[..VARIANTOF] AS $KPI.VARIANTOF
+	,[..SEARCH] AS $KPI.SEARCH
+	,[..REPLACE] AS $KPI.REPLACE
+	,[..DONTRESOLVE] AS $KPI.DONTRESOLVE
+    ,[..NUMFORMAT] AS $KPI.NUMFORMAT
+    ,[..DECIMALSEP] AS $KPI.DECIMALSEP
+    ,[..THOUSANDSEP] AS $KPI.THOUSANDSEP
+    ,[..COMMENT] AS $KPI.COMMENT
+    ,[..APP_PATTERNNAME] AS $KPI.APP_PATTERNNAME
+    ,[..USAGE] AS $KPI.USAGE
+    ,REPLACE(
+    	If(WildMatch([..DONTRESOLVE], 1, -1, 'true'), REPLACE([..FORMULA], '$' & '(', '$»('), [..FORMULA])
+    	,'$' & '(=', '$»(=') AS $KPI.FORMULA.tmp
+    	
+    ,''
+	    & If(Len([..VARIANTOF]) AND NOT Len([..FORMULA]), [..NAME] & ': Undefined VARIANTOF.', '')
+	    & If(Len([..VARIANTOF]) AND (NOT Len([..SEARCH]) OR NOT Len([..REPLACE])), [..NAME] & ': SEARCH REPLACE pair missing.', '')
+	    & If(Len([..VARIANTOF]) AND ([..FORMULA.orig] = [..FORMULA]), [..NAME] & ': SEARCH was not successful.', '')	    
+    	AS $KPI.ERRORS
+RESIDENT
+	$KPI_Table_tmp
+ORDER BY
+	[..FINALSORTID];
+
+DROP TABLE $KPI_Table_tmp;
+
+TRACE [# Step 5/5: Checking KPI definition integrity. #];
+
+IF NoOfRows('$KPI_Table') = 0 THEN
+	Error: No KPIs were loaded;
+END IF
+
+IF FieldValueCount('$KPI.NAME') < NoOfRows('$KPI_Table') THEN
+	Error: NAME is not unique;
+END IF
+
+IF FieldValueCount('$KPI.ERRORS') > 1 THEN
+	Error: KPI load did not pass all error checks.;
+END IF
+
+
+// Create Variables
+SET vtmp_KnownVars = [''];
+LET vtmp_ErrorCount = 0;
+
+FOR vtmp_Round = 1 TO 3
+	FOR vtmp_N = 0 TO NoOfRows('$KPI_Table')-1
+		LET vtmp_NAME    = Peek('$KPI.NAME', vtmp_N, '$KPI_Table');
+		LET vtmp_KnownVars   = vtmp_KnownVars & ',' & CHR(39) & vtmp_NAME & CHR(39);
+		LET vtmp_FORMULA = Peek('$KPI.FORMULA.tmp', vtmp_N, '$KPI_Table');
+		LET vtmp_NUMFORMAT   = Peek('$KPI.NUMFORMAT', vtmp_N, '$KPI_Table');
+		LET vtmp_DECIMALSEP  = Peek('$KPI.DECIMALSEP', vtmp_N, '$KPI_Table');
+		LET vtmp_THOUSANDSEP = Peek('$KPI.THOUSANDSEP', vtmp_N, '$KPI_Table');
+		
+		IF vtmp_Round = 1 THEN    
+
+		// In the first run define the variables
+
+			LET vtmp_Refs = SubstringCount(vtmp_FORMULA, '$' & '(');
+			IF vtmp_Refs > 0 THEN
+				TRACE [# Defining "$(vtmp_NAME)" (uses $(vtmp_Refs) references) #];
+			ELSE
+				TRACE [# Defining "$(vtmp_NAME)" #];
+			END IF
+			FOR vtmp_R = 1 TO vtmp_Refs
+				LET vtmp_ThisRef = TextBetween(vtmp_FORMULA, '$' & '(', ')', vtmp_R);
+				IF NOT Match(vtmp_ThisRef, $(vtmp_KnownVars)) THEN 
+					TRACE Error: Referenced Variable "$(vtmp_ThisRef)" is not defined;
+					LET vtmp_ErrorCount = vtmp_ErrorCount + 1;
+				END IF
+			NEXT vtmp_R
+			
+			SET [$(vtmp_NAME)] = $(vtmp_FORMULA);
+
+			
+		ELSEIF vtmp_Round = 2 THEN
+		
+			// Get optional Number formatting as part of the formula
+			
+			IF LEN(vtmp_NUMFORMAT) THEN
+				TRACE [# Applying NUM formatting to "$(vtmp_NAME)" #];		
+				IF LEN(vtmp_DECIMALSEP) THEN
+					IF LEN(vtmp_THOUSANDSEP) THEN
+						LET [$(vtmp_NAME)] = 'Num(' & [$(vtmp_NAME)] &', ''$(vtmp_NUMFORMAT)'', ''$(vtmp_DECIMALSEP)'', ''$(vtmp_THOUSANDSEP)'')';
+					ELSE
+						LET [$(vtmp_NAME)] = 'Num(' & [$(vtmp_NAME)] &', ''$(vtmp_NUMFORMAT)'', ''$(vtmp_DECIMALSEP)'')';
+					END IF
+				ELSE
+					LET [$(vtmp_NAME)] = 'Num(' & [$(vtmp_NAME)] &', ''$(vtmp_NUMFORMAT)'')';			
+				END IF
+			END IF		
+		
+			// in the 2nd run, when the formulas of the variables are final,
+			// REPLACE the $»( with $( 
+			
+			LET [$(vtmp_NAME)] = REPLACE([$(vtmp_NAME)], '$»(', '$' & '(');  
+			        
+		END IF
+	NEXT vtmp_N;
+NEXT vtmp_Round;
+
+IF vtmp_ErrorCount THEN
+	Stop script execution due to KPI definition errors;
+END IF
+
+
+IF NOT Alt('$(vKPI_KeepTable)', 0) THEN
+	DROP TABLE $KPI_Table;
+END IF
+
+// Delete temporary script variables
+LET vtmp_Round = Null();
+LET vtmp_N = Null();
+LET vtmp_R = Null();
+LET vtmp_ThisRef = Null();
+LET vtmp_Refs = Null();
+LET vtmp_NAME = Null();
+LET vtmp_FORMULA = Null();
+LET vtmp_NUMFORMAT = Null(); 
+LET vtmp_DECIMALSEP  = Null();
+LET vtmp_THOUSANDSEP = Null();
+LET vtmp_ErrorCount = Null();
+LET vtmp_KnownVars = Null();
+LET vtmp_NoOfAllowedCols = Null();
+LET vtmp_Recs = Null();
+LET vtmp_SQLTable = Null();
+LET vKPI_SQL_AppGroups = Null();
+LET vKPI_SQL_Set_Definitions = Null();
+LET vKPI_SQL_KPI_Definitions = Null();
+LET vKPI_SQL_KPI_Variants = Null();
+LET vKPI_File_Params = Null();
+LET vKPI_Source = Null();
+LET vKPI_KeepTable = Null();
+LET vKPI_File = Null();
+
+
+TRACE [# Done defining repository variables. #];
+TRACE ;
+
+
+/* Release Notes
+
+v2.01	-forgot to delete temporary vasriable "vKnownVars". Now being deleted.
+		-renamed $KPI table into $KPI_Table
+		-flexible number of columns allowed
+		
+v3.01	-changed column field names of config table to UPPER CASE
+		-included the separation of set-definitions and kpi defintions with
+		 search/replace columns. 
+		-support for defintions made in 3 different SQL tables when using database
+		-support for flexible number of columns, depending on whether you
+		 want to use all functionality or just stick to the essential columns
+		-Changed the meaning of "Usage" column to be either "*" (valid within
+		 all apps) or to a short id, which is defined earlier. You may define
+		 multiple app name patterns under one id to be used under "Usage"
+		 
+v3.10 	runs also under partial reload and recreates the KPI variables.
+
+v3.20	avoided some RESIDENT loads to speed up reload with large datasets.
+
+*/
+
