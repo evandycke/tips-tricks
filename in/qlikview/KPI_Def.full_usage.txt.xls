@@ -1,0 +1,56 @@
+USAGE	NAME	FORMULA	VARIANTOF	SEARCH	REPLACE	DONTRESOLVE	NUMFORMAT	DECIMALSEP	THOUSANDSEP	COMMENT
+//										
+//	*** App Usage Range ***									
+$	LH	*Lufthansa*								
+$	MG	Management*								
+$	MG	*Dash*								
+$	ALL	*.qvw								
+$	ALL	*.qvf								
+$	ALL	*								
+$	ALL	try*.*								
+//										
+//	*** Set Modifiers *** 									
+*	PY	Year={$(=Max(Year)-1)}								
+*	CY	Year={$(=Max(Year))}								
+*	LH	CARRIER_ALN_CD_LH_Flag = {1}								
+//										
+//	**** TRAFFIC *****									
+//										
+ALL	_PAX_NR	Sum ({$} PAX_NR)					0.000,00 €	,	.	
+ALL	_PAX_NR.CY		_PAX_NR	{$}	{< $(CY) >}		0.000,00 €	,	.	
+ALL	_PAX_NR.PY		_PAX_NR	{$}	{< $(PY) >}		0.000,00 €	,	.	
+//										
+ALL	_PAX_NR.LH		_PAX_NR	{$}	{< $(LH) >}					
+ALL	_PAX_NR.LH CY		_PAX_NR	{$}	{< $(LH) , $(CY) >}					
+ALL	_PAX_NR.LH PY		_PAX_NR	{$}	{< $(LH) , $(PY) >}					
+//										
+ALL	_#Destinations	Count(DISTINCT {< $(LH), $(CY) >} OTHER_ARP_CD)								
+ALL	_%FEE	sum(FEE_TOTAL)/ sum(TOTAL FEE_TOTAL)								
+ALL	_%PAX	Sum(PAX_NR_DETAILS)/ SUM (TOTAL PAX_NR_DETAILS)					##0 %			
+ALL	_%PAX2	$(_PAX_NR.CY) / $(_PAX_NR.PY)					##0 %			
+//										
+//	**** COST TYPES ****									
+//										
+*	_Infrastructure Cost	Sum( {$} FEE_TOTAL)								
+//										
+*	_AirportChargesTotal	Sum ( {$} ARP_CHARGES)								
+*	_AirportChargesTotal.CY		_AirportChargesTotal	{$}	{< $(CY) >}					
+*	_AirportChargesTotal.PY		_AirportChargesTotal	{$}	{< $(PY) >}					
+*										
+*	_G+E Total	Sum ( {$} FEE.ALL)								
+*	_G+E Total.CY		_G+E Total	{$}	{< $(CY) >}					
+*	_G+E Total.PY		_G+E Total	{$}	{< $(PY) >}					
+*										
+ALL	_G+E Total per PAX LH	$(_G+E Total) / $(_PAX_NR.LH)								
+ALL	_G+E Total per PAX LH CY	$(_G+E Total.CY) / $(_PAX_NR.LH CY)								
+ALL	_G+E Total per PAX LH PY	$(_G+E Total.PY) / $(_PAX_NR.LH PY)								
+//										
+//	**** MARGINS ****									
+//										
+*	_Margin 1	sum({$} Margin_I_A_ONB)								
+*	_Margin 1.CY		_Margin 1	{$}	{< $(CY) >}					
+*	_Margin 1.PY		_Margin 1	{$}	{< $(PY) >}					
+//										
+ALL	_Margin 1 per PAX	$(_Margin 1)    / $(_PAX_NR)								
+ALL	_Margin 1 per PAX CY	$(_Margin 1.CY) / $(_PAX_NR.CY)								
+ALL	_Margin 1 per PAX PY	$(_Margin 1.PY) / $(_PAX_NR.PY)								
