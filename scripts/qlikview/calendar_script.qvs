@@ -1,0 +1,33 @@
+// Définir les Dates Min et Max
+Let vMinDate = Num(Makedate(2010,1,1)); 
+Let vMaxDate = Num(Makedate(Year(Now()),Month(Now()),Day(Now())));
+
+//LET vMinDate = Num(peek('VentesDate',0,'Ventes'));
+//LET vMaxDate = Num(peek('VentesDate',-1,'Ventes'));
+
+// Générer toutes les dates possibles entre la date Min et la Date Max
+ChampDate:
+LOAD date($(vMinDate)+IterNo()-1) AS MaDate
+AUTOGENERATE (1) 
+WHILE $(vMinDate)+IterNo()-1<= $(vMaxDate);
+
+// Créer une table Calendrier qui va contenir les différentes représentations des dates
+Calendrier:
+LOAD
+    MaDate AS Date,
+    Year(MaDate) AS Ann�e,
+    'T ' & Num(Ceil(Month(MaDate)/3),'(ROM)0') AS Trimestre,
+    Month(MaDate) as Mois,
+    MonthEnd(MaDate)as DateFinMois,
+    Week(MaDate) AS Semaine,
+    Weekday(MaDate) AS JourSemaine,
+    Day(MaDate) AS Jour
+ 
+RESIDENT ChampDate;
+
+//supprimer la table ChampDate
+DROP TABLE ChampDate;
+
+//Supprimer les variables vMinDate et vMaxDate
+SET vMinDate = ;
+SET vMaxDate = ;

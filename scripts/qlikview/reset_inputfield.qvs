@@ -1,0 +1,4 @@
+SUB ResetInputField
+       set fld = ActiveDocument.Fields("FieldName")
+       fld.ResetInputFieldValues 0
+END SUB

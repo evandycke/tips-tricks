@@ -1,0 +1,19 @@
+// Table de Mappage
+Directory; 
+MaTableMappage:
+Mapping LOAD Code_ISO,
+			 Nom_pays 
+     		 
+FROM
+MesVentes.xlsx (ooxml, embedded labels, table is Pays);
+
+
+// Table des ventes
+Ventes:
+LOAD Id_ventes, 
+     Montant_ventes, 
+    // Code_ISO
+    ApplyMap('MaTableMappage',Code_ISO,Null()) as [Nom de pays]
+    
+FROM
+MesVentes.xlsx (ooxml, embedded labels, table is ventes);
