@@ -1,0 +1,17 @@
+USAGE	NAME	FORMULA
+//		
+//	*** Set Modifiers *** 	
+*	PY	Year={$(=Max(Year)-1)}
+*	CY	Year={$(=Max(Year))}
+*	LH	CARRIER_ALN_CD_LH_Flag = {1}
+//		
+//	**** PRODUCT INVENTORY *****	
+//		
+*	IN_NR	Sum (UnitsIn)
+*	IN_NR CY	Sum ( {< $(CY) >} IN_NR )
+*	IN_NR PY	Sum ( {< $(PY) >} IN_NR )
+//		
+*	IN_NR LH	Sum ( {< $(LH) >} IN_NR )
+*	IN_NR LH CY	Sum ( {< $(LH) , $(CY) >} IN_NR )
+*	IN_NR LH PY	Sum ( {< $(LH) , $(PY) >} IN_NR )
+//		
