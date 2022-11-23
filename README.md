@@ -40,6 +40,7 @@ Quelques trucs et astuces sur certains langages, outils, ...
 * [Useless indexes](./scripts/indexes/useless-indexes.sql)
 * [Missing indexes #1](./scripts/indexes/missing-indexes-1.sql)
 * [Missing indexes #2](./scripts/indexes/missing-indexes-2.sql)
+* [Déterminer la sélectivité des colonnes d'un index](./scripts/mssql/indexes/selectivite-index.sql)
 
 #### Primary Key / Foreign Key / Constraints
 
